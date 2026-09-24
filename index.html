@@ -1,0 +1,937 @@
+<!DOCTYPE html>
+<html lang="tr" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SUÇ MAHALLİ BİTKİ DEDEKTİFİ - Adli Botanik & Soygun Soruşturması</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&family=Outfit:wght@600;700;800;900&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Outfit', 'sans-serif'],
+                        mono: ['Fira Code', 'monospace'],
+                    },
+                    colors: {
+                        notebook: '#1e293b',
+                        amberGlow: '#f59e0b',
+                        cyberCyan: '#06b6d4'
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.88);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .notebook-container {
+            background-color: #0f172a;
+            background-image: 
+                linear-gradient(#1e293b 1px, transparent 1px),
+                linear-gradient(90deg, #1e293b 1px, transparent 1px);
+            background-size: 24px 24px;
+            border-left: 18px solid #334155;
+            position: relative;
+        }
+        .notebook-holes {
+            position: absolute;
+            left: -14px;
+            top: 20px;
+            bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            z-index: 10;
+        }
+        .hole {
+            width: 10px;
+            height: 10px;
+            background-color: #020617;
+            border-radius: 50%;
+            border: 1px solid #64748b;
+        }
+        .marker-highlight {
+            background: linear-gradient(120deg, rgba(245, 158, 11, 0.22) 0%, rgba(245, 158, 11, 0.08) 100%);
+            border-left: 4px solid #f59e0b;
+        }
+        .screen-transition {
+            transition: opacity 0.4s ease, transform 0.4s ease;
+        }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #020617; }
+        ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #06b6d4; }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 font-sans min-h-screen flex flex-col justify-between selection:bg-cyan-500 selection:text-slate-950">
+
+    <!-- TEK SEFERLİK GİRİŞ VE KARŞILAMA EKRANI -->
+    <div id="welcomeScreen" class="fixed inset-0 z-50 bg-slate-950 flex items-center justify-center p-4 screen-transition">
+        <div class="glass-panel max-w-lg w-full p-8 rounded-3xl border border-cyan-500/40 shadow-2xl text-center space-y-6 relative overflow-hidden">
+            <div class="absolute -right-10 -top-10 w-40 h-40 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none"></div>
+            
+            <div class="w-20 h-20 rounded-2xl bg-cyan-500/10 border border-cyan-500/40 flex items-center justify-center text-cyan-400 text-3xl mx-auto shadow-xl shadow-cyan-500/20">
+                <i class="fa-solid fa-mask animate-pulse"></i>
+            </div>
+
+            <div class="space-y-2">
+                <span class="text-[10px] font-mono px-3 py-1 rounded bg-amber-950/80 text-amber-400 border border-amber-800">ADLİ BOTANİK BİRİMİ</span>
+                <h1 class="text-2xl sm:text-3xl font-extrabold font-display tracking-tight text-white">SUÇ MAHALLİ BİTKİ DEDEKTİFİ</h1>
+                <p class="text-xs sm:text-sm text-slate-400">Olay yerindeki bitki dokularını incele, ortak aletleri çöz ve ortadaki hırsızı yakala!</p>
+            </div>
+
+            <div class="space-y-3 pt-2 text-left">
+                <label class="text-xs font-mono text-cyan-400 block"><i class="fa-solid fa-user-detective mr-1"></i> Dedektif Kod Adınızı Girin (Yalnızca Bir Kez):</label>
+                <input type="text" id="detectiveNameInput" placeholder="Örn: Dedektif Miller" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-sm text-white outline-none focus:border-cyan-500 transition font-mono">
+            </div>
+
+            <button onclick="startTheGame()" class="w-full py-4 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold rounded-xl text-sm transition shadow-lg shadow-cyan-500/30 flex items-center justify-center gap-2">
+                <i class="fa-solid fa-play"></i> GÖREVE BAŞLA
+            </button>
+        </div>
+    </div>
+
+    <!-- ANA OYUN ARAYÜZÜ -->
+    <div id="mainAppWrapper" class="flex flex-col justify-between flex-grow opacity-0 pointer-events-none screen-transition">
+        <!-- HEADER HUD -->
+        <header class="border-b border-slate-800/90 bg-slate-900/90 backdrop-blur-md sticky top-0 z-40 shadow-xl">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 py-2.5 flex items-center justify-between gap-2">
+                
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/40 flex items-center justify-center text-cyan-400 font-bold text-lg shadow-lg shadow-cyan-500/10">
+                        <i class="fa-solid fa-mask"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-sm sm:text-base font-extrabold font-display tracking-tight text-white flex items-center gap-2">
+                            <span id="ui-app-title">HIRSIZLIK & BİTKİ DEDEKTİFİ</span>
+                            <span id="displayDetectiveName" class="text-[9px] font-mono px-2 py-0.5 rounded bg-cyan-950 text-cyan-400 border border-cyan-800">Dedektif</span>
+                        </h1>
+                        <p id="ui-app-subtitle" class="text-[11px] text-slate-400 font-mono hidden sm:block">Adli Botanik & Paylaşımlı Alet Soruşturması</p>
+                    </div>
+                </div>
+
+                <div class="flex items-center space-x-2 sm:space-x-3">
+                    <div class="flex items-center bg-slate-950 border border-slate-800 rounded-xl px-2 py-1 text-xs font-mono">
+                        <i class="fa-solid fa-globe text-cyan-400 mr-1.5"></i>
+                        <select id="langSelect" onchange="changeLanguage(this.value)" class="bg-transparent text-slate-200 outline-none cursor-pointer font-bold">
+                            <option value="tr" class="bg-slate-900">TR</option>
+                            <option value="en" class="bg-slate-900">EN</option>
+                            <option value="ja" class="bg-slate-900">JA</option>
+                        </select>
+                    </div>
+
+                    <div class="flex items-center space-x-1.5 bg-slate-950 border border-slate-800 px-3 py-1.5 rounded-xl font-mono text-xs">
+                        <i class="fa-solid fa-stopwatch text-amber-400"></i>
+                        <span id="timerDisplay" class="font-bold text-amber-400">02:30</span>
+                    </div>
+
+                    <div class="hidden md:flex items-center space-x-2 bg-slate-950 border border-slate-800 px-3 py-1.5 rounded-xl font-mono text-xs">
+                        <div class="flex items-center gap-1">
+                            <i class="fa-solid fa-folder-check text-emerald-400"></i>
+                            <span id="casesSolvedCount" class="font-bold text-white">0</span>
+                        </div>
+                        <div class="h-3 w-[1px] bg-slate-800"></div>
+                        <div class="flex items-center gap-1">
+                            <i class="fa-solid fa-star text-amber-400"></i>
+                            <span id="scoreDisplay" class="font-bold text-cyan-400">0</span>
+                        </div>
+                    </div>
+
+                    <button onclick="openModal('caseBuilderModal')" class="px-2.5 py-1.5 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold rounded-xl text-xs transition flex items-center gap-1.5 shadow-lg shadow-cyan-500/20">
+                        <i class="fa-solid fa-plus-circle"></i> <span id="ui-btn-custom-case" class="hidden sm:inline">Vaka Oluştur</span>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <main class="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex-grow w-full space-y-4">
+
+            <!-- Navigation Tabs -->
+            <nav class="grid grid-cols-3 gap-2 bg-slate-900/90 p-1.5 rounded-2xl border border-slate-800 text-xs font-medium font-mono">
+                <button id="navTab-1" onclick="switchTab(1)" class="py-2.5 px-2 rounded-xl text-center flex items-center justify-center gap-2 transition bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 font-bold shadow-md">
+                    <i class="fa-solid fa-book-bookmark text-base text-amber-400"></i>
+                    <span id="ui-tab1">1. Saha Not Defteri</span>
+                </button>
+                <button id="navTab-2" onclick="switchTab(2)" class="py-2.5 px-2 rounded-xl text-center flex items-center justify-center gap-2 transition text-slate-400 hover:text-slate-200">
+                    <i class="fa-solid fa-seedling text-base"></i>
+                    <span id="ui-tab2">2. Bitki Kataloğu</span>
+                </button>
+                <button id="navTab-3" onclick="switchTab(3)" class="py-2.5 px-2 rounded-xl text-center flex items-center justify-center gap-2 transition text-slate-400 hover:text-slate-200">
+                    <i class="fa-solid fa-users-viewfinder text-base"></i>
+                    <span id="ui-tab3">3. 3 Şüpheli & Çanta İnceleme</span>
+                </button>
+            </nav>
+
+            <!-- TAB 1: DETECTIVE NOTEBOOK -->
+            <section id="section-1" class="space-y-4">
+                <div class="glass-panel rounded-2xl p-4 sm:p-5 border border-cyan-500/30 bg-slate-900/90 shadow-xl space-y-3">
+                    <div class="flex items-center gap-2 border-b border-slate-800 pb-2.5 text-amber-400 font-bold font-mono text-sm">
+                        <i class="fa-solid fa-clipboard-list text-cyan-400 text-base"></i>
+                        <span id="ui-instructions-title">SORUŞTURMA YÖNERGELERİ & OYUN KURALLARI</span>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs text-slate-300 leading-relaxed font-sans">
+                        <div class="bg-slate-950/70 p-3 rounded-xl border border-slate-800 space-y-1">
+                            <strong class="text-amber-400 block font-mono"><i class="fa-solid fa-magnifying-glass mr-1"></i>1. Defterdeki İpuçlarını Okuyun:</strong>
+                            <span id="ui-inst-1">Saha Not Defteri'nden olay yerindeki bitkinin <strong>biçimsel özelliğini</strong> ve kullanılan <strong>biyoloji lab aletini</strong> öğrenin.</span>
+                        </div>
+                        <div class="bg-slate-950/70 p-3 rounded-xl border border-slate-800 space-y-1">
+                            <strong class="text-cyan-400 block font-mono"><i class="fa-solid fa-book-leaf mr-1"></i>2. Kataloğu ve Habitatı Eşleştirin:</strong>
+                            <span id="ui-inst-2">Katalogta biçim gizlidir. Defterdeki tariften doğru bitkiyi bulup yetiştiği <strong>habitat / ortamı</strong> tespit edin.</span>
+                        </div>
+                        <div class="bg-slate-950/70 p-3 rounded-xl border border-slate-800 space-y-1">
+                            <strong class="text-emerald-400 block font-mono"><i class="fa-solid fa-user-check mr-1"></i>3. Şüphelileri Analiz Edin:</strong>
+                            <span id="ui-inst-3">Şüpheliler arasında aynı alete sahip kişiler vardır. Doğru habitatı ve doğru aleti taşıyan <strong>2. (Ortadaki) Şüpheli</strong> her zaman asıl suçludur!</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-panel rounded-2xl p-4 sm:p-5 border border-slate-800 relative overflow-hidden shadow-2xl">
+                    <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+                        <span id="caseCodeBadge" class="px-3 py-1 bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-mono font-bold rounded-lg flex items-center gap-1.5">
+                            <i class="fa-solid fa-user-secret"></i> VAKA YÜKLENİYOR...
+                        </span>
+                        <span id="ui-case-tag" class="text-xs font-mono text-cyan-400 bg-cyan-950/60 px-2.5 py-1 rounded-md border border-cyan-800">PAYLAŞIMLI ALETLER & ORTADAKİ HIRSIZ</span>
+                    </div>
+                    <h2 id="caseTitle" class="text-lg sm:text-xl font-bold font-display text-white mb-1">...</h2>
+                    <p id="caseDescription" class="text-slate-300 text-xs sm:text-sm leading-relaxed">...</p>
+                </div>
+
+                <div class="notebook-container rounded-3xl p-5 sm:p-8 border border-amber-500/40 shadow-2xl relative">
+                    <div class="notebook-holes">
+                        <div class="hole"></div><div class="hole"></div><div class="hole"></div>
+                        <div class="hole"></div><div class="hole"></div><div class="hole"></div>
+                        <div class="hole"></div><div class="hole"></div>
+                    </div>
+
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between border-b-2 border-amber-500/40 pb-4 mb-6 gap-3">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-12 h-12 rounded-2xl bg-amber-500/20 border border-amber-500/50 flex items-center justify-center text-amber-400 text-2xl shadow-xl">
+                                <i class="fa-solid fa-book-open-reader"></i>
+                            </div>
+                            <div>
+                                <h3 id="ui-notebook-heading" class="text-lg sm:text-2xl font-black font-display text-amber-300 tracking-wide uppercase">
+                                    SOYGUN SAHASI DEDEKTİF DEFTERİ
+                                </h3>
+                                <p id="ui-notebook-subheading" class="text-xs font-mono text-slate-400">Olay Yerinde Bulunan Deliller & Alet İzleri</p>
+                            </div>
+                        </div>
+                        <span class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-500/20 text-amber-300 border border-amber-500/40 rounded-xl font-mono text-xs font-bold w-fit">
+                            <i class="fa-solid fa-lock text-amber-400 animate-pulse"></i> <span id="ui-secret-file">GİZLİ KANIT</span>
+                        </span>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 my-4">
+                        <div class="marker-highlight p-5 rounded-2xl bg-slate-900/90 border border-amber-500/30 shadow-xl space-y-3">
+                            <div class="flex items-center justify-between border-b border-amber-500/20 pb-2">
+                                <span class="text-sm font-mono font-bold text-amber-400 flex items-center gap-2">
+                                    <i class="fa-solid fa-shapes text-cyan-400 text-base"></i> <span id="ui-clue1-header">İPUCU 1: Biçim & Doku Yapısı</span>
+                                </span>
+                                <span class="text-[10px] font-mono text-slate-400 bg-slate-950 px-2 py-0.5 rounded border border-slate-800">KANIT #A1</span>
+                            </div>
+                            <p id="clueText1" class="text-sm sm:text-base text-slate-100 font-sans leading-relaxed font-medium">Yükleniyor...</p>
+                        </div>
+
+                        <div class="marker-highlight p-5 rounded-2xl bg-slate-900/90 border border-amber-500/30 shadow-xl space-y-3">
+                            <div class="flex items-center justify-between border-b border-amber-500/20 pb-2">
+                                <span class="text-sm font-mono font-bold text-amber-400 flex items-center gap-2">
+                                    <i class="fa-solid fa-screwdrivers text-cyan-400 text-base"></i> <span id="ui-clue2-header">İPUCU 2: Kesik Tipi & Kullanılan Alet</span>
+                                </span>
+                                <span class="text-[10px] font-mono text-slate-400 bg-slate-950 px-2 py-0.5 rounded border border-slate-800">KANIT #A2</span>
+                            </div>
+                            <p id="clueText2" class="text-sm sm:text-base text-slate-100 font-sans leading-relaxed font-medium">Yükleniyor...</p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-12 gap-4 mt-6 pt-4 border-t border-slate-800">
+                        <div class="md:col-span-8 flex items-center gap-4 bg-slate-950/80 p-4 rounded-2xl border border-slate-800">
+                            <div class="w-20 h-20 rounded-xl bg-slate-900 border border-amber-500/40 flex items-center justify-center p-2 shrink-0 shadow-inner text-amber-400 text-3xl">
+                                <i class="fa-solid fa-leaf"></i>
+                            </div>
+                            <div class="space-y-1">
+                                <h4 id="ui-sample-title" class="font-bold text-amber-300 font-mono text-sm flex items-center gap-2">
+                                    <i class="fa-solid fa-fingerprint text-cyan-400"></i> Soygun Yeri Doku Örneği
+                                </h4>
+                                <p id="ui-sample-desc" class="text-slate-400 text-xs leading-relaxed">
+                                    Kataloğa geçtiğinizde biçim bilgisi gösterilmeyecektir. Defterdeki biçimsel bitki ve alet izlerini unutmayın!
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="md:col-span-4 flex flex-col justify-center items-center bg-slate-950/80 p-4 rounded-2xl border border-slate-800 text-center space-y-2">
+                            <span id="step1StatusText" class="font-mono text-xs font-bold text-amber-400">Bitki Henüz Seçilmedi</span>
+                            <button onclick="switchTab(2)" class="w-full py-3 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold rounded-xl text-xs sm:text-sm transition flex items-center justify-center gap-2 shadow-lg shadow-cyan-500/20">
+                                <span id="ui-btn-goto-catalog">Bitki Kataloğuna Geç</span> <i class="fa-solid fa-arrow-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 2: PLANT CATALOG -->
+            <section id="section-2" class="hidden space-y-4">
+                <div class="glass-panel rounded-2xl p-4 sm:p-5 border border-slate-800 space-y-4">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-3">
+                        <div>
+                            <h3 id="ui-catalog-title" class="text-base font-bold font-display text-white flex items-center gap-2">
+                                <i class="fa-solid fa-seedling text-cyan-400"></i> Referans Bitki Kataloğu
+                            </h3>
+                            <p id="ui-catalog-subtitle" class="text-xs text-slate-400">Kartlarda biçim bilgisi verilmez, yalnızca doğal yetiştiği ortam (habitat) yer alır.</p>
+                        </div>
+                        <div id="selectedPlantBadge" class="hidden px-3 py-1.5 bg-emerald-500/20 border border-emerald-500/50 text-emerald-300 font-mono text-xs rounded-xl flex items-center gap-2">
+                            <i class="fa-solid fa-check-circle"></i> <span id="selectedPlantBadgeName">Seçildi</span>
+                        </div>
+                    </div>
+
+                    <div id="plantCatalogGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+
+                    <div class="flex justify-end pt-2">
+                        <button onclick="switchTab(3)" class="px-5 py-2.5 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold rounded-xl text-xs sm:text-sm transition flex items-center gap-2 shadow-lg shadow-cyan-500/20">
+                            <span id="ui-btn-goto-step3">3. Sorgu & Çanta İncelemeye Geç</span> <i class="fa-solid fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 3: SUSPECTS & BAG SEARCH -->
+            <section id="section-3" class="hidden space-y-4">
+                <div class="glass-panel rounded-2xl p-4 sm:p-5 border border-slate-800 space-y-4">
+                    <div>
+                        <span id="ui-step2-tag" class="text-xs font-mono text-cyan-400 uppercase tracking-widest font-bold block mb-1">STRATEJİK ÇAPRAZ SORGU VE ENVANTER ODASI (ORTADAKİ HIRSIZ)</span>
+                        <h3 id="ui-step2-title" class="text-lg font-bold font-display text-white">3 Şüphelinin İfadeleri ve Çanta İncelemesi</h3>
+                        <p id="ui-step2-desc" class="text-xs text-slate-400">Şüphelilerde ortak aletler bulunur. Doğru habitatı ve doğru aleti taşıyan <strong>2. Şüpheli (Ortadaki)</strong> her zaman suçludur!</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3 bg-slate-950 p-3.5 rounded-xl border border-slate-800 text-xs font-mono">
+                        <div class="space-y-1">
+                            <span id="ui-sum-plant-label" class="text-[10px] text-slate-500 uppercase block">1. Teşhis Edilen Bitki:</span>
+                            <div id="summaryDiagnosedPlant" class="font-bold text-amber-400">Henüz Seçilmedi</div>
+                        </div>
+                        <div class="space-y-1">
+                            <span id="ui-sum-habitat-label" class="text-[10px] text-slate-500 uppercase block">2. Doğal Yetişme Alanı:</span>
+                            <div id="summaryPlantHabitat" class="font-bold text-cyan-400">Bilinmiyor</div>
+                        </div>
+                        <div class="space-y-1">
+                            <span id="ui-sum-match-label" class="text-[10px] text-slate-500 uppercase block">3. Sorgu Durumu:</span>
+                            <div id="summarySuspectMatch" class="font-bold text-emerald-400">Çantalar İncelemeye Hazır</div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-2">
+                        <h4 id="ui-arrest-header" class="text-xs font-mono text-slate-400 uppercase tracking-wider">3 Şüpheli ve Envanter Analizi (Suçlu Ortada)</h4>
+                        <div id="suspectsContainer" class="grid grid-cols-1 md:grid-cols-3 gap-4"></div>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+
+        <footer class="border-t border-slate-800/80 bg-slate-900/50 py-2.5 text-center text-[11px] font-mono text-slate-500">
+            Hırsızlık & Bitki Dedektifi • Shared Tools & Middle Suspect Matrix Game
+        </footer>
+    </div>
+
+    <!-- MODAL 1: CUSTOM CASE BUILDER -->
+    <div id="caseBuilderModal" class="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md hidden flex items-center justify-center p-4">
+        <div class="glass-panel rounded-2xl max-w-2xl w-full p-5 space-y-4 relative shadow-2xl max-h-[90vh] overflow-y-auto">
+            <button onclick="closeModal('caseBuilderModal')" class="absolute top-4 right-4 text-slate-400 hover:text-white">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+            <div class="flex items-center gap-3 border-b border-slate-800 pb-3">
+                <div class="w-10 h-10 rounded-xl bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center text-cyan-400 text-lg">
+                    <i class="fa-solid fa-sliders"></i>
+                </div>
+                <div>
+                    <h3 id="ui-modal-custom-title" class="text-base font-bold font-display text-white">Özel Soygun Vakası Oluştur</h3>
+                    <p id="ui-modal-custom-desc" class="text-xs text-slate-400 font-mono">Hırsızlık hikayenizi yazın, bitki biçimi ve alet ipuçlarını belirleyin!</p>
+                </div>
+            </div>
+
+            <form id="customCaseForm" onsubmit="handleCustomCaseSubmit(event)" class="space-y-3 text-xs font-mono">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="text-slate-300 block mb-1">Soygun Başlığı:</label>
+                        <input type="text" id="customCaseTitle" required placeholder="Örn: Siyah Mühür Operasyonu" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-slate-200 outline-none">
+                    </div>
+                    <div>
+                        <label class="text-slate-300 block mb-1">Vaka Kodu:</label>
+                        <input type="text" id="customCaseCode" required placeholder="Örn: VAKA #8812" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-slate-200 outline-none">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="text-slate-300 block mb-1">Soygun Hikayesi:</label>
+                    <textarea id="customCaseDesc" rows="2" required placeholder="Hırsız neyi çaldı ve olay yerinde ne bıraktı?" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-slate-200 outline-none"></textarea>
+                </div>
+
+                <div class="space-y-2">
+                    <label class="text-cyan-400 font-bold block"><i class="fa-solid fa-key mr-1"></i> Defter İpuçları:</label>
+                    <textarea id="customClue1" rows="2" required placeholder="İpucu 1: Bitki biçimi..." class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-slate-200 outline-none"></textarea>
+                    <textarea id="customClue2" rows="2" required placeholder="İpucu 2: Alet izi..." class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-slate-200 outline-none"></textarea>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-slate-950 p-3 rounded-xl border border-slate-800">
+                    <div>
+                        <label class="text-emerald-400 font-bold block mb-1">Bitki Adı:</label>
+                        <input type="text" id="customPlantName" required placeholder="Örn: Lavanta" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-slate-200 outline-none">
+                    </div>
+                    <div>
+                        <label class="text-emerald-400 font-bold block mb-1">Habitat:</label>
+                        <input type="text" id="customPlantHabitat" required placeholder="Örn: Lavanta Tarlası" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-slate-200 outline-none">
+                    </div>
+                </div>
+
+                <button type="submit" class="w-full py-2.5 bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 font-bold rounded-xl text-xs shadow-lg">
+                    <i class="fa-solid fa-play mr-1"></i> Soygun Vakası Oluştur
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 2: RESULT (Başarı / Hata Durumu) -->
+    <div id="resultModal" class="fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-md hidden flex items-center justify-center p-4">
+        <div id="modalContainer" class="glass-panel border rounded-2xl max-w-md w-full p-6 text-center space-y-4 shadow-2xl relative">
+            <div id="resultIconBox" class="w-16 h-16 rounded-full flex items-center justify-center mx-auto text-3xl border">
+                <i id="resultIcon" class="fa-solid fa-trophy"></i>
+            </div>
+            <h3 id="resultTitle" class="text-xl font-bold font-display text-white">SOYGUNCU YAKALANDI!</h3>
+            <p id="resultDescription" class="text-slate-300 text-xs sm:text-sm leading-relaxed">
+                Mükemmel adli analiz! Bitki biçimini doğru eşleştirdiniz ve ortadaki hırsızı tespit ettiniz.
+            </p>
+            <div class="py-2 px-3 bg-slate-950 rounded-xl border border-slate-800 text-xs font-mono flex items-center justify-around">
+                <span>Puan: <strong id="earnedPoints" class="text-amber-400">+100</strong></span>
+                <span>Toplam: <strong id="totalModalScore" class="text-cyan-400">100</strong></span>
+            </div>
+            <button onclick="loadNextCase()" class="w-full py-2.5 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold rounded-xl transition text-xs flex items-center justify-center gap-2">
+                <span id="ui-btn-next-case">Sıradaki Vakaya Geç</span> <i class="fa-solid fa-arrow-right"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- GAME LOGIC -->
+    <script>
+        const LAB_TOOLS_POOL = [
+            "Santrifüj", "Spektrofotometre", "İnkübatör", "Mikroskop", 
+            "pH Metre", "Otoklav", "Mikropipet", "Su Banyosu", 
+            "Hassas Terazi", "Petri Kutusu"
+        ];
+
+        const SUSPECT_NAMES = [
+            "Ahmet 'Hızlı' Demir", "Selin 'Sessiz' Kaya", "Can 'Gölge' Arslan", 
+            "Elif 'Kuzgun' Yılmaz", "Murat 'Lazer' Şahin", "Zeynep 'Fırtına' Çelik"
+        ];
+
+        const MYSTERY_TITLES = [
+            "Gece Yarısı Soygunu", "Siyah Mühür Operasyonu", "Gölge Müzesi Vaka Analizi",
+            "Sessiz Sızma Soruşturması", "Kripto Depo Baskını"
+        ];
+
+        const TRANSLATIONS = {
+            tr: {
+                appTitle: "HIRSIZLIK & BİTKİ DEDEKTİFİ",
+                appSubtitle: "Adli Botanik & Paylaşımlı Alet Soruşturması",
+                btnCustomCase: "Vaka Oluştur",
+                tab1: "1. Saha Not Defteri",
+                tab2: "2. Bitki Kataloğu",
+                tab3: "3. 3 Şüpheli & Çanta İnceleme",
+                caseTag: "PAYLAŞIMLI ALETLER & ORTADAKİ HIRSIZ",
+                instructionsTitle: "SORUŞTURMA YÖNERGELERİ & OYUN KURALLARI",
+                inst1: "Saha Not Defteri'nden olay yerindeki bitkinin <strong>biçimsel özelliğini</strong> ve kullanılan <strong>biyoloji lab aletini</strong> öğrenin.",
+                inst2: "Katalogta biçim gizlidir. Defterdeki tariften doğru bitkiyi bulup yetiştiği <strong>habitat / ortamı</strong> tespit edin.",
+                inst3: "Şüpheliler arasında aynı alete sahip kişiler vardır. Doğru habitatı ve doğru aleti taşıyan <strong>2. (Ortadaki) Şüpheli</strong> her zaman asıl suçludur!",
+                notebookHeading: "SOYGUN SAHASI DEDEKTİF DEFTERİ",
+                notebookSubheading: "Olay Yerinde Bulunan Deliller & Alet İzleri",
+                secretFile: "GİZLİ KANIT",
+                clue1Header: "İPUCU 1: Biçim & Doku Yapısı",
+                clue2Header: "İPUCU 2: Kesik Tipi & Kullanılan Alet",
+                sampleTitle: "Soygun Yeri Doku Örneği",
+                sampleDesc: "Kataloğa geçtiğinizde biçim bilgisi gösterilmeyecektir. Defterdeki biçimsel bitki ve alet izlerini unutmayın!",
+                btnGotoCatalog: "Bitki Kataloğuna Geç",
+                catalogTitle: "Referans Bitki Kataloğu",
+                catalogSubtitle: "Kartlarda biçim bilgisi verilmez, yalnızca doğal yetiştiği ortam (habitat) yer alır.",
+                btnGotoStep3: "3. Sorgu & Çanta İncelemeye Geç",
+                step2Tag: "STRATEJİK ÇAPRAZ SORGU VE ENVANTER ODASI (ORTADAKİ HIRSIZ)",
+                step2Title: "3 Şüphelinin İfadeleri ve Çanta İncelemesi",
+                step2Desc: "Şüphelilerde ortak aletler bulunur. Doğru habitatı ve doğru aleti taşıyan <strong>2. Şüpheli (Ortadaki)</strong> her zaman suçludur!",
+                sumPlantLabel: "1. Teşhis Edilen Bitki:",
+                sumHabitatLabel: "2. Doğal Yetişme Alanı:",
+                sumMatchLabel: "3. Sorgu Durumu:",
+                arrestHeader: "3 Şüpheli ve Envanter Analizi (Suçlu Ortada)",
+                btnArrest: "HIRSIZI TUTUKLA",
+                modalCustomTitle: "Özel Soygun Vakası Oluştur",
+                modalCustomDesc: "Hırsızlık hikayenizi yazın, bitki biçimi ve alet ipuçlarını belirleyin!",
+                btnNextCase: "Sıradaki Vakaya Geç",
+                unselectedPlant: "Bitki Henüz Seçilmedi",
+                unknownHabitat: "Bilinmiyor",
+                waitingMatch: "İncelemeye Hazır",
+                arrestReady: "Tutuklamaya Hazır!",
+                habitatLabel: "Yetiştiği Yer / Habitat",
+                statementLabel: "İfadesi:",
+                bagLabel: "Çantadaki Aletler:"
+            },
+            en: {
+                appTitle: "HEIST & PLANT DETECTIVE",
+                appSubtitle: "Forensic Botany & Shared Tools Investigation",
+                btnCustomCase: "Create Heist",
+                tab1: "1. Field Notebook",
+                tab2: "2. Plant Catalog",
+                tab3: "3. 3 Suspects & Bag Search",
+                caseTag: "SHARED TOOLS & MIDDLE SUSPECT",
+                instructionsTitle: "INVESTIGATION INSTRUCTIONS & GAME RULES",
+                inst1: "Read the <strong>morphological form clue</strong> and tool mark from the Field Notebook below.",
+                inst2: "The catalog hides form details. Use the notebook's description to match the plant and find its <strong>habitat</strong>.",
+                inst3: "Some suspects share the same tool. The <strong>2nd (Middle) Suspect</strong> with both the correct habitat and tool is always the thief!",
+                notebookHeading: "CRIME SCENE FIELD NOTEBOOK",
+                notebookSubheading: "Evidence & Tool Marks Found at Heist Scene",
+                secretFile: "CLASSIFIED EVIDENCE",
+                clue1Header: "CLUE 1: Leaf Form & Structure",
+                clue2Header: "CLUE 2: Cut Type & Used Tool",
+                sampleTitle: "Heist Scene Tissue Sample",
+                sampleDesc: "Form specs are hidden in catalog. Remember the plant form and tool clues from this notebook!",
+                btnGotoCatalog: "Go to Plant Catalog",
+                catalogTitle: "Reference Plant Catalog",
+                catalogSubtitle: "Catalog displays plant habitat only (form info is omitted).",
+                btnGotoStep3: "3. Interrogation & Bag Search",
+                step2Tag: "CROSS INTERROGATION & INVENTORY ROOM (MIDDLE SUSPECT)",
+                step2Title: "3 Suspect Statements & Bag Search",
+                step2Desc: "Suspects share tools. The <strong>2nd Suspect (Middle)</strong> with both matching habitat and tool is the thief!",
+                sumPlantLabel: "1. Diagnosed Plant:",
+                sumHabitatLabel: "2. Natural Habitat:",
+                sumMatchLabel: "3. Inspection Status:",
+                arrestHeader: "3 Suspects & Inventory Analysis (Thief is Middle)",
+                btnArrest: "ARREST THIEF",
+                modalCustomTitle: "Create Custom Heist Case",
+                modalCustomDesc: "Write your heist story, specify plant form and tool clues!",
+                btnNextCase: "Next Case",
+                unselectedPlant: "No Plant Selected",
+                unknownHabitat: "Unknown",
+                waitingMatch: "Ready for Inspection",
+                arrestReady: "Ready to Arrest!",
+                habitatLabel: "Habitat / Location",
+                statementLabel: "Statement:",
+                bagLabel: "Tools in Bag:"
+            },
+            ja: {
+                appTitle: "植物探偵 & 強盗事件",
+                appSubtitle: "法医植物学 & 共有ツール捜査",
+                btnCustomCase: "事件作成",
+                tab1: "1. 捜査ノート",
+                tab2: "2. 植物図鑑",
+                tab3: "3. 3人の容疑者と所持品",
+                caseTag: "共有ツール & 真ん中の犯人",
+                instructionsTitle: "捜査指示 & ゲームルール",
+                inst1: "現場ノートから植物の<strong>形態特徴</strong>と使用された<strong>実験器具</strong>を確認してください。",
+                inst2: "図鑑には形態がありません。ノートの記述から植物を特定し、<strong>生育環境</strong>を見つけます。",
+                inst3: "一部の容疑者は同じ道具を持っています。正しい環境と道具を持つ<strong>2番目（真ん中）の容疑者</strong>が常に犯人です！",
+                notebookHeading: "現場捜査ノート",
+                notebookSubheading: "現場で発見された証拠と工具の跡",
+                secretFile: "機密証拠",
+                clue1Header: "ヒント1: 葉の形態と構造",
+                clue2Header: "ヒント2: 切断面と使用道具",
+                sampleTitle: "現場の植物組織サンプル",
+                sampleDesc: "図鑑には形態情報がありません。ノートのヒントを覚えて正しい植物を選んでください！",
+                btnGotoCatalog: "植物図鑑へ",
+                catalogTitle: "参照用植物図鑑",
+                catalogSubtitle: "図鑑には生育環境のみが記載されています。",
+                btnGotoStep3: "3. 尋問と所持品検査へ",
+                step2Tag: "尋問・所持品検査室 (真ん中の容疑者)",
+                step2Title: "3人の容疑者の供述とカバン検査",
+                step2Desc: "容疑者間でツールが共有されています。正しい環境と道具を持つ<strong>2番目の容疑者</strong>が犯人です！",
+                sumPlantLabel: "1. 特定された植物:",
+                sumHabitatLabel: "2. 生育環境:",
+                sumMatchLabel: "3. 捜査状況:",
+                arrestHeader: "3人の容疑者と所持品分析 (犯人は中央)",
+                btnArrest: "犯人を逮捕する",
+                modalCustomTitle: "カスタム事件を作成",
+                modalCustomDesc: "ストーリーとヒントを設定してください！",
+                btnNextCase: "次の事件へ",
+                unselectedPlant: "未選択",
+                unknownHabitat: "不明",
+                waitingMatch: "検査準備完了",
+                arrestReady: "逮捕準備完了！",
+                habitatLabel: "生育地 / 環境",
+                statementLabel: "供述:",
+                bagLabel: "所持している道具:"
+            }
+        };
+
+        const PLANT_DATABASE = [
+            { id: "lavanta", name: "Lavanta", form: "İnce-mızraksı, tüylü ve grimsi-yeşil yaprak dizilimi", habitat: "Lavanta Tarlası & Seralar", icon: "fa-spa" },
+            { id: "aloevera", name: "Aloe Vera", form: "Etli, mızrak biçimli, kenarları dikenli ve rozet dizilimli", habitat: "Sukkulent Seraları", icon: "fa-seedling" },
+            { id: "papatya", name: "Papatya", form: "Çok parçalı, ince şeritli ve hassas dokulu yapraklar", habitat: "Açık Çayır Bahçeleri", icon: "fa-leaf" },
+            { id: "biberiye", name: "Biberiye", form: "İğnemsi, sert, alt yüzeyi beyazımsı ve otsu-çalı yapısı", habitat: "Akdeniz Çalı Ormanları", icon: "fa-tree" },
+            { id: "nane", name: "Nane", form: "Oval biçimli, kenarları tırtıklı ve belirgin damarlı yapraklar", habitat: "Nemli Dere Yatakları", icon: "fa-wand-magic-sparkles" }
+        ];
+
+        let currentLanguage = 'tr';
+        let currentCase = null;
+        let selectedPlant = null;
+        let casesSolved = 0;
+        let totalScore = 0;
+        let timerInterval = null;
+        let timeLeft = 150;
+        let detectiveName = "Dedektif";
+
+        function startTheGame() {
+            const nameInput = document.getElementById('detectiveNameInput').value.trim();
+            if(nameInput) {
+                detectiveName = nameInput;
+            }
+            document.getElementById('displayDetectiveName').innerText = detectiveName;
+
+            const welcome = document.getElementById('welcomeScreen');
+            const wrapper = document.getElementById('mainAppWrapper');
+
+            welcome.style.opacity = '0';
+            setTimeout(() => {
+                welcome.style.display = 'none';
+                wrapper.classList.remove('opacity-0', 'pointer-events-none');
+                loadRandomCase();
+                startTimer();
+            }, 400);
+        }
+
+        function generateRandomCase() {
+            const targetPlant = PLANT_DATABASE[Math.floor(Math.random() * PLANT_DATABASE.length)];
+            const targetTool = LAB_TOOLS_POOL[Math.floor(Math.random() * LAB_TOOLS_POOL.length)];
+            const randomTitle = MYSTERY_TITLES[Math.floor(Math.random() * MYSTERY_TITLES.length)];
+
+            let otherPlants = PLANT_DATABASE.filter(p => p.habitat !== targetPlant.habitat);
+            let otherTools = LAB_TOOLS_POOL.filter(t => t !== targetTool);
+
+            let availableNames = SUSPECT_NAMES.sort(() => 0.5 - Math.random());
+            let availableHabitats = otherPlants.map(p => p.habitat).sort(() => 0.5 - Math.random());
+            let availableTools = otherTools.sort(() => 0.5 - Math.random());
+
+            const middleThief = {
+                id: 2,
+                name: availableNames[0],
+                job: targetPlant.habitat,
+                tool: targetTool,
+                isThief: true
+            };
+
+            const innocent1 = {
+                id: 1,
+                name: availableNames[1],
+                job: availableHabitats[0],
+                tool: targetTool, 
+                isThief: false
+            };
+
+            const innocent2 = {
+                id: 3,
+                name: availableNames[2],
+                job: availableHabitats[1],
+                tool: availableTools[0],
+                isThief: false
+            };
+
+            return {
+                title: randomTitle,
+                code: `VAKA #${Math.floor(1000 + Math.random() * 9000)}`,
+                desc: `Müzeden paha biçilmez bir eser çalındı! Olay yerinde bitki dokusu ve lab ekipman izi bırakıldı.`,
+                clue1: `Olay yerindeki yaprak mikroskop altında incelendi. Biçimsel Özelliği: ${targetPlant.form}.`,
+                clue2: `Kilitte iz bırakan lab ekipmanı: [${targetTool}] izleri tespit edildi.`,
+                targetPlant: targetPlant,
+                targetTool: targetTool,
+                suspects: [innocent1, middleThief, innocent2]
+            };
+        }
+
+        function loadRandomCase() {
+            selectedPlant = null;
+            currentCase = generateRandomCase();
+            renderCase();
+        }
+
+        function renderCase() {
+            document.getElementById('caseCodeBadge').innerHTML = `<i class="fa-solid fa-user-secret"></i> ${currentCase.code}`;
+            document.getElementById('caseTitle').innerText = currentCase.title;
+            document.getElementById('caseDescription').innerText = currentCase.desc;
+            document.getElementById('clueText1').innerText = currentCase.clue1;
+            document.getElementById('clueText2').innerText = currentCase.clue2;
+
+            renderCatalog();
+            renderSuspects();
+            updateSummaryUI();
+            switchTab(1);
+        }
+
+        function renderCatalog() {
+            const grid = document.getElementById('plantCatalogGrid');
+            const lang = TRANSLATIONS[currentLanguage];
+            grid.innerHTML = '';
+
+            PLANT_DATABASE.forEach(plant => {
+                const isSelected = selectedPlant && selectedPlant.id === plant.id;
+                const card = document.createElement('div');
+                card.className = `p-4 rounded-2xl border transition cursor-pointer flex flex-col justify-between space-y-3 ${
+                    isSelected 
+                    ? 'bg-emerald-950/40 border-emerald-500 shadow-lg shadow-emerald-500/10' 
+                    : 'bg-slate-900/80 border-slate-800 hover:border-cyan-500/50'
+                }`;
+                card.onclick = () => selectPlant(plant);
+
+                card.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-2.5">
+                            <div class="w-9 h-9 rounded-xl ${isSelected ? 'bg-emerald-500/20 text-emerald-400' : 'bg-slate-800 text-cyan-400'} flex items-center justify-center text-base">
+                                <i class="fa-solid ${plant.icon}"></i>
+                            </div>
+                            <h4 class="font-bold text-slate-100 text-sm font-display">${plant.name}</h4>
+                        </div>
+                        ${isSelected ? '<i class="fa-solid fa-circle-check text-emerald-400 text-lg"></i>' : ''}
+                    </div>
+                    <div class="space-y-1.5 text-xs">
+                        <p class="text-slate-400"><strong class="text-slate-300">${lang.habitatLabel}:</strong> ${plant.habitat}</p>
+                    </div>
+                    <button class="w-full py-2 rounded-xl font-bold text-xs transition ${
+                        isSelected ? 'bg-emerald-500 text-slate-950' : 'bg-slate-800 text-slate-200 hover:bg-cyan-500 hover:text-slate-950'
+                    }">
+                        ${isSelected ? 'SEÇİLDİ' : 'BİTKİYİ TEŞHİS ET'}
+                    </button>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function selectPlant(plant) {
+            selectedPlant = plant;
+            renderCatalog();
+            updateSummaryUI();
+        }
+
+        function renderSuspects() {
+            const container = document.getElementById('suspectsContainer');
+            const lang = TRANSLATIONS[currentLanguage];
+            container.innerHTML = '';
+
+            currentCase.suspects.forEach((suspect, index) => {
+                const card = document.createElement('div');
+                card.className = "bg-slate-900/90 border border-slate-800 rounded-2xl p-4 space-y-3 relative hover:border-amber-500/40 transition shadow-xl";
+
+                card.innerHTML = `
+                    <div class="flex items-center justify-between border-b border-slate-800 pb-2.5">
+                        <div class="flex items-center space-x-2.5">
+                            <div class="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-400 flex items-center justify-center font-bold text-xs font-mono">
+                                #${index + 1}
+                            </div>
+                            <h5 class="font-bold text-slate-100 text-sm font-display">${suspect.name}</h5>
+                        </div>
+                        ${index === 1 ? '<span class="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-950 text-cyan-300 border border-cyan-800">ORTADAKİ</span>' : ''}
+                    </div>
+
+                    <div class="space-y-2 text-xs">
+                        <div>
+                            <span class="text-slate-500 font-mono block">${lang.statementLabel}</span>
+                            <p class="text-slate-300 italic bg-slate-950/60 p-2 rounded-lg border border-slate-800/80">
+                                "Çalıştığım alan: <strong class="text-cyan-400 font-normal">${suspect.job}</strong>"
+                            </p>
+                        </div>
+
+                        <div>
+                            <span class="text-slate-500 font-mono block mb-1">${lang.bagLabel}</span>
+                            <div class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-cyan-950/50 border border-cyan-800/80 text-cyan-300 rounded-md font-mono text-xs font-bold">
+                                <i class="fa-solid fa-vial text-amber-400"></i> ${suspect.tool}
+                            </div>
+                        </div>
+                    </div>
+
+                    <button onclick="arrestSuspect(${suspect.id})" class="w-full py-2.5 bg-gradient-to-r from-red-600 to-amber-600 hover:from-red-500 hover:to-amber-500 text-white font-bold rounded-xl text-xs transition flex items-center justify-center gap-2 shadow-lg shadow-red-900/20">
+                        <i class="fa-solid fa-handcuffs"></i> ${lang.btnArrest}
+                    </button>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function updateSummaryUI() {
+            const lang = TRANSLATIONS[currentLanguage];
+            const diagnosedEl = document.getElementById('summaryDiagnosedPlant');
+            const habitatEl = document.getElementById('summaryPlantHabitat');
+            const matchEl = document.getElementById('summarySuspectMatch');
+            const statusText = document.getElementById('step1StatusText');
+            const badge = document.getElementById('selectedPlantBadge');
+
+            if (selectedPlant) {
+                diagnosedEl.innerText = selectedPlant.name;
+                habitatEl.innerText = selectedPlant.habitat;
+                matchEl.innerText = lang.arrestReady;
+                statusText.innerText = `Seçilen Bitki: ${selectedPlant.name}`;
+                badge.classList.remove('hidden');
+                document.getElementById('selectedPlantBadgeName').innerText = selectedPlant.name;
+            } else {
+                diagnosedEl.innerText = lang.unselectedPlant;
+                habitatEl.innerText = lang.unknownHabitat;
+                matchEl.innerText = lang.waitingMatch;
+                statusText.innerText = lang.unselectedPlant;
+                badge.classList.add('hidden');
+            }
+        }
+
+        function arrestSuspect(suspectId) {
+            const suspect = currentCase.suspects.find(s => s.id === suspectId);
+            const isCorrectPlant = selectedPlant && selectedPlant.id === currentCase.targetPlant.id;
+            const isCorrectThief = suspect && suspect.isThief;
+
+            const modal = document.getElementById('resultModal');
+            const iconBox = document.getElementById('resultIconBox');
+            const icon = document.getElementById('resultIcon');
+            const title = document.getElementById('resultTitle');
+            const desc = document.getElementById('resultDescription');
+            const pointsEl = document.getElementById('earnedPoints');
+            const totalScoreEl = document.getElementById('totalModalScore');
+
+            if (isCorrectPlant && isCorrectThief) {
+                casesSolved++;
+                totalScore += 100;
+                document.getElementById('casesSolvedCount').innerText = casesSolved;
+                document.getElementById('scoreDisplay').innerText = totalScore;
+
+                iconBox.className = "w-16 h-16 rounded-full flex items-center justify-center mx-auto text-3xl bg-emerald-500/20 text-emerald-400 border-emerald-500";
+                icon.className = "fa-solid fa-trophy";
+                title.innerText = "SOYGUNCU YAKALANDI!";
+                desc.innerText = `Harika iş ${detectiveName}! Ortadaki hırsızı ve ${selectedPlant.name} bitkisini başarıyla eşleştirdin!`;
+                pointsEl.innerText = "+100";
+            } else {
+                iconBox.className = "w-16 h-16 rounded-full flex items-center justify-center mx-auto text-3xl bg-red-500/20 text-red-400 border-red-500";
+                icon.className = "fa-solid fa-circle-xmark";
+                title.innerText = "YANLIŞ TUTUKLAMA!";
+                desc.innerText = `Yanlış şüpheli veya yanlış bitki seçimi. Tekrar deneyin!`;
+                pointsEl.innerText = "+0";
+            }
+
+            totalScoreEl.innerText = totalScore;
+            openModal('resultModal');
+        }
+
+        function loadNextCase() {
+            closeModal('resultModal');
+            loadRandomCase();
+        }
+
+        function switchTab(tabNum) {
+            for (let i = 1; i <= 3; i++) {
+                document.getElementById(`section-${i}`).classList.add('hidden');
+                const nav = document.getElementById(`navTab-${i}`);
+                nav.className = "py-2.5 px-2 rounded-xl text-center flex items-center justify-center gap-2 transition text-slate-400 hover:text-slate-200";
+            }
+            document.getElementById(`section-${tabNum}`).classList.remove('hidden');
+            const activeNav = document.getElementById(`navTab-${tabNum}`);
+            activeNav.className = "py-2.5 px-2 rounded-xl text-center flex items-center justify-center gap-2 transition bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 font-bold shadow-md";
+        }
+
+        function changeLanguage(lang) {
+            currentLanguage = lang;
+            updateLanguageUI();
+            if (currentCase) renderCase();
+        }
+
+        function updateLanguageUI() {
+            const l = TRANSLATIONS[currentLanguage];
+            document.getElementById('ui-app-title').innerText = l.appTitle;
+            document.getElementById('ui-app-subtitle').innerText = l.appSubtitle;
+            document.getElementById('ui-btn-custom-case').innerText = l.btnCustomCase;
+            document.getElementById('ui-tab1').innerText = l.tab1;
+            document.getElementById('ui-tab2').innerText = l.tab2;
+            document.getElementById('ui-tab3').innerText = l.tab3;
+            document.getElementById('ui-case-tag').innerText = l.caseTag;
+            document.getElementById('ui-instructions-title').innerText = l.instructionsTitle;
+            document.getElementById('ui-inst-1').innerHTML = l.inst1;
+            document.getElementById('ui-inst-2').innerHTML = l.inst2;
+            document.getElementById('ui-inst-3').innerHTML = l.inst3;
+            document.getElementById('ui-notebook-heading').innerText = l.notebookHeading;
+            document.getElementById('ui-notebook-subheading').innerText = l.notebookSubheading;
+            document.getElementById('ui-secret-file').innerText = l.secretFile;
+            document.getElementById('ui-clue1-header').innerText = l.clue1Header;
+            document.getElementById('ui-clue2-header').innerText = l.clue2Header;
+            document.getElementById('ui-sample-title').innerText = l.sampleTitle;
+            document.getElementById('ui-sample-desc').innerText = l.sampleDesc;
+            document.getElementById('ui-btn-goto-catalog').innerText = l.btnGotoCatalog;
+            document.getElementById('ui-catalog-title').innerText = l.catalogTitle;
+            document.getElementById('ui-catalog-subtitle').innerText = l.catalogSubtitle;
+            document.getElementById('ui-btn-goto-step3').innerText = l.btnGotoStep3;
+            document.getElementById('ui-step2-tag').innerText = l.step2Tag;
+            document.getElementById('ui-step2-title').innerText = l.step2Title;
+            document.getElementById('ui-step2-desc').innerText = l.step2Desc;
+            document.getElementById('ui-sum-plant-label').innerText = l.sumPlantLabel;
+            document.getElementById('ui-sum-habitat-label').innerText = l.sumHabitatLabel;
+            document.getElementById('ui-sum-match-label').innerText = l.sumMatchLabel;
+            document.getElementById('ui-arrest-header').innerText = l.arrestHeader;
+            document.getElementById('ui-modal-custom-title').innerText = l.modalCustomTitle;
+            document.getElementById('ui-modal-custom-desc').innerText = l.modalCustomDesc;
+            document.getElementById('ui-btn-next-case').innerText = l.btnNextCase;
+        }
+
+        function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
+        function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+
+        function handleCustomCaseSubmit(e) {
+            e.preventDefault();
+            const title = document.getElementById('customCaseTitle').value;
+            const code = document.getElementById('customCaseCode').value;
+            const desc = document.getElementById('customCaseDesc').value;
+            const c1 = document.getElementById('customClue1').value;
+            const c2 = document.getElementById('customClue2').value;
+            const plantName = document.getElementById('customPlantName').value;
+            const plantHabitat = document.getElementById('customPlantHabitat').value;
+
+            const customPlant = { id: "custom", name: plantName, form: plantHabitat, habitat: plantHabitat, icon: "fa-leaf" };
+            const randomTool = LAB_TOOLS_POOL[Math.floor(Math.random() * LAB_TOOLS_POOL.length)];
+            const otherTools = LAB_TOOLS_POOL.filter(t => t !== randomTool);
+
+            currentCase = {
+                title: title,
+                code: code,
+                desc: desc,
+                clue1: c1,
+                clue2: c2,
+                targetPlant: customPlant,
+                targetTool: randomTool,
+                suspects: [
+                    { id: 1, name: "Şüpheli A", job: "Açık Çayır Bahçeleri", tool: randomTool, isThief: false },
+                    { id: 2, name: "Şüpheli B (Ortadaki)", job: plantHabitat, tool: randomTool, isThief: true },
+                    { id: 3, name: "Şüpheli C", job: "Sukkulent Seraları", tool: otherTools[0], isThief: false }
+                ]
+            };
+
+            closeModal('caseBuilderModal');
+            renderCase();
+        }
+
+        function startTimer() {
+            clearInterval(timerInterval);
+            timeLeft = 150;
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                const min = Math.floor(timeLeft / 60).toString().padStart(2, '0');
+                const sec = (timeLeft % 60).toString().padStart(2, '0');
+                const timerEl = document.getElementById('timerDisplay');
+                if(timerEl) timerEl.innerText = `${min}:${sec}`;
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    alert("Zaman doldu!");
+                    location.reload();
+                }
+            }, 1000);
+        }
+    </script>
+</body>
+</html>
